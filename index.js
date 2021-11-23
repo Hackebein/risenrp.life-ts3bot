@@ -5,7 +5,7 @@ TeamSpeak.connect({
     host: process.env.HOST,
     serverport: process.env.PORT,
     username: process.env.USERNAME,
-    password: process.env.PASSWORT,
+    password: process.env.PASSWORD,
     nickname: process.env.NICKNAME
 }).then(async teamspeak => {
     teamspeak.on("close", async () => {
