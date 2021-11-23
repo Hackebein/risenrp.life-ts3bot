@@ -1,6 +1,39 @@
 const { TeamSpeak } = require("ts3-nodejs-library")
 
-//create a new connection
+const notificationMessages = [
+    "Der Affe {{user}} braucht Bananen",
+    "Da will sich {{user}} beschweren",
+    "{{user}} sagt: kommt ausm knick",
+    "{{user}}: alter Sack bearbeite mich",
+    "{{user}}, gang gang",
+    "Pleb {{user}} will Support",
+    "{{user}}: besser isses das Ihr mich jetzt bearbeitet!",
+    "{{user}} stinkt nach Einhorn pup",
+    "{{user}} pupst nur in deiner Anwesenheit",
+    "{{user}} will Schokolade",
+    "{{user}} ist total daneben",
+    "Der warme Bruder {{user}} erwartet dich",
+    "Sei nett, {{user}} ist da",
+    "{{user}} hat Wasser im Ohr",
+    "{{user}} macht mimimi",
+    "{{user}} braucht Hilfe",
+    "{{user}} denkt er ist der beste",
+    "{{user}} hat ein Ei gelegt",
+    "{{user}} hat seine Eier verloren",
+    "{{user}} ist jetzt eine Geisel",
+    "{{user}} drückt der Stift",
+    "{{user}} vegetiert vor sich hin",
+    "jajajaja {{user}} nein nein",
+    "{{user}} steht in der Ecke, zum weinen",
+    "{{user}} ist jetzt Rentner",
+    "{{user}}, der dessen Name nicht gesagt werden darf",
+    "Der Fisch hat einen neunen Namen, {{user}}",
+    "{{user}} braucht einen Joke",
+    "{{user}} verblutet",
+    "Der Dussel {{user}} will was von dir",
+    "{{user}} gewinnt morgen im Lotto"
+];
+
 TeamSpeak.connect({
     host: process.env.HOST,
     serverport: process.env.PORT,
@@ -41,8 +74,12 @@ TeamSpeak.connect({
                 // 104 => AFK
                 // 106 => Anderes TS
                 if (["108", "104", "106"].includes(client.cid)) return
-                console.log("Pinging '" + client.nickname + "' for '" + movingClient.client.nickname + "' joining any waiting room")
-                client.message(movingClient.client.nickname + " erwartet deinen Support!")
+                let messageIndex = Math.floor(Math.random() * notificationMessages.length)
+                let randomMessage = notificationMessages[messageIndex]
+                    .replace('{{user}}', movingClient.client.nickname)
+                    .replace('{{supporter}}', client.nickname)
+                console.log("Pinging '" + client.nickname + "' (" + randomMessage+ ")")
+                client.message(randomMessage)
             }).catch(e => {
                 console.error(e)
             })
