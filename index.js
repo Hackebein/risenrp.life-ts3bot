@@ -1,6 +1,6 @@
 const { TeamSpeak } = require("ts3-nodejs-library")
 
-const notificationMessages = [
+const notificationSupportMessages = [
     "Der Affe {{user}} braucht Bananen",
     "Da will sich {{user}} beschweren",
     "{{user}} sagt: kommt ausm knick",
@@ -33,6 +33,20 @@ const notificationMessages = [
     "Der Dussel {{user}} will was von dir",
     "{{user}} gewinnt morgen im Lotto"
 ];
+const notificationAirportMessages = [
+    "{{user}} chillt jetzt am Flughafen",
+    "{{user}} hat sein Gepäck gefunden",
+    "{{user}} surft auf dem Gepäckband",
+    "{{user}} hat sich den Finger in der Drehtür gequetscht",
+    "{{supporter}}! Beweg deinen Faulen Arsch IC! {{user}} hat geläutet!",
+    "{{user}} steht zur Whitelist bereit!",
+    "Whiteliste {{user}}!"
+];
+
+function getRandomMessage(messages) {
+    let messageIndex = Math.floor(Math.random() * messages.length)
+    return messages[messageIndex]
+}
 
 TeamSpeak.connect({
     host: process.env.HOST,
@@ -47,23 +61,32 @@ TeamSpeak.connect({
         console.log("reconnected!")
     })
     teamspeak.on("clientmoved", async (movingClient) => {
-        let groupName;
+        let groupName, randomMessageTemplate;
         switch (movingClient.client.cid) {
             case "37":
                 groupName = 'Notify "W-Projekt Leitung"'
+                randomMessageTemplate = getRandomMessage(notificationSupportMessages)
                 break
             case "38":
                 groupName = 'Notify "W-Community"'
+                randomMessageTemplate = getRandomMessage(notificationSupportMessages)
                 break
             case "41":
                 groupName = 'Notify "W-Allgemein"'
+                randomMessageTemplate = getRandomMessage(notificationSupportMessages)
                 break
             case "42":
                 groupName = 'Notify "W-Unregestriert"'
+                randomMessageTemplate = getRandomMessage(notificationSupportMessages)
                 break
-            default:
-                return
+            case "108":
+                if(movingClient.client.servergroups.includes('10')) {
+                    groupName = 'Notify "W-Einreise"'
+                    randomMessageTemplate = getRandomMessage(notificationAirportMessages)
+                }
+                break
         }
+        if (!groupName) return
         const group = await teamspeak.getServerGroupByName(groupName)
         if (!group) throw new Error("Could not find group '" + groupName + "'!")
         const clients = await group.clientList({ clientType: 0 })
@@ -74,8 +97,7 @@ TeamSpeak.connect({
                 // 104 => AFK
                 // 106 => Anderes TS
                 if (["108", "104", "106"].includes(client.cid)) return
-                let messageIndex = Math.floor(Math.random() * notificationMessages.length)
-                let randomMessage = notificationMessages[messageIndex]
+                let randomMessage = randomMessageTemplate
                     .replace('{{user}}', movingClient.client.nickname)
                     .replace('{{supporter}}', client.nickname)
                 console.log("Pinging '" + client.nickname + "' (" + randomMessage+ ")")
